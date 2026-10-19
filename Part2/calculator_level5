@@ -1,0 +1,62 @@
+import operator
+import sys
+
+
+def save_memory(output, m_list):
+    if output is None: print('No Value to Save'); return
+    m_list.clear()
+    m_list.append(output)
+    print('Memory Updated')
+
+
+def show_memory(m_list):
+    if not m_list: print('Nothing is in Memory.')
+    else: print(f'Saved value: {m_list[0]}')
+
+
+def delete_memory(m_list):
+    if not m_list: print('Nothing in memory to delete.')
+    else: m_list.clear(); print('Deletion completed!')
+
+
+OPERATIONS = {
+    1: ('Addition', operator.add),
+    2: ('Subtraction', operator.sub),
+    3: ('Multiplication', operator.mul),
+    4: ('Division', operator.truediv),
+    5: ('Floor Division', operator.floordiv),
+    6: ('Modulo', operator.mod),
+    7: ('Save Memory', save_memory),
+    8: ('Show Memory', show_memory),
+    9: ('Delete Memory', delete_memory),
+    0: ('Quit', sys.exit)
+}
+result = None
+for number, (value, _) in OPERATIONS.items():
+    print(number, value)
+memory = []
+while True:
+    try:
+        choice = int(input('Enter your choice:'))
+        _, function = OPERATIONS[choice]
+        if 0 < choice < 7:
+            first_number = int(input('Enter first number'))
+            second_number = int(input('Enter second number'))
+            result = function(first_number, second_number)
+            print(result)
+        elif choice == 7:
+            function(result, memory)
+        elif choice in (8, 9):
+            function(memory)
+        else:
+            function()
+    except ValueError:
+        print('Invalid Input')
+    except ZeroDivisionError:
+        print('Division and Modulo by 0 is not allowed.')
+    except KeyError:
+        print('Invalid input choice')
+    except KeyboardInterrupt:
+        print('\nProgram ends here, because of keyboard interrupt')
+        sys.exit()
+
