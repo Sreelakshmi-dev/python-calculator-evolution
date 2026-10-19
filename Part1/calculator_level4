@@ -1,0 +1,24 @@
+
+import operator
+OPERATION = {
+    1: ('Addition', operator.add),
+    2: ('Subtraction', operator.sub),
+    3: ('Multiplication', operator.mul),
+    4: ('Division', operator.truediv),
+    5: ('Floor Division', operator.floordiv),
+    6: ('Modulo', operator.mod)
+}
+try:
+    first_number = int(input('Enter first number'))
+    second_number = int(input('Enter second number'))
+    for number, (value,_) in OPERATION.items():
+        print(number, value)
+    choice = int(input('Enter your choice'))
+    _, function = OPERATION[choice]
+    print(function(first_number, second_number))
+except ValueError:
+    print('Invalid Input')
+except ZeroDivisionError:
+    print('Division and Modulo by 0 is not allowed.')
+except KeyError:
+    print('Invalid input choice')
