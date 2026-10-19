@@ -1,0 +1,64 @@
+import operator
+import sys
+
+
+def memory_manage(output, m_list, option):
+    if option == 7:
+        if output is None:
+            print('No Value to Save')
+            return
+        m_list.clear()
+        m_list.append(output)
+        print('Memory Updated')
+    elif option == 8:
+        if not m_list:
+            print('Nothing is in Memory.')
+        else:
+            print(f'Saved value: {m_list[0]}')
+    else:
+        if not m_list:
+            print('Nothing in memory to delete.')
+        else:
+            m_list.clear();print('Deletion completed!')
+
+
+OPERATIONS = {
+    1: ('Addition', operator.add),
+    2: ('Subtraction', operator.sub),
+    3: ('Multiplication', operator.mul),
+    4: ('Division', operator.truediv),
+    5: ('Floor Division', operator.floordiv),
+    6: ('Modulo', operator.mod),
+}
+result = None
+print('________Menu Options_________')
+for number, (value, _) in OPERATIONS.items():print(number, value)
+OPERATION_LIST = ['Save Latest Calculation', 'View Latest Save', 'Delete Latest Save', 'Quit']
+for number, item in enumerate(OPERATION_LIST, 7): print(number, item)
+memory, cont = [], ''
+while True:
+    try:
+        choice = int(input('Enter your choice:'))
+        if 0 < choice < 7:
+            _, function = OPERATIONS[choice]
+            if cont != 'c':
+                first_number = int(input('Enter first number'))
+            second_number = int(input('Enter second number'))
+            result = function(first_number, second_number)
+            print(result)
+            cont = input('C. Continue calculation wit answer').strip().lower()
+            if cont == 'c':
+                first_number = result
+        elif choice in (7, 8, 9):
+            memory_manage(result, memory, choice)
+        elif choice == 10:
+            break
+        else:
+            raise ValueError
+    except ValueError:
+        print('Invalid Input')
+    except ZeroDivisionError:
+        print('Division and Modulo by 0 is not allowed.')
+    except KeyboardInterrupt:
+        print('\nProgram ends here, because of keyboard interrupt')
+        sys.exit()
