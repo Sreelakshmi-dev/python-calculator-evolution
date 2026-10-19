@@ -1,0 +1,120 @@
+
+import operator
+import sys
+import csv
+import datetime
+
+
+def memory_manage(output, m_list, option):
+    if option == 7:
+        if output is None:
+            print('No Value to Save')
+            return
+        m_list.clear()
+        m_list.append(output)
+        print('Memory Updated')
+    elif option == 8:
+        if not m_list:
+            print('Nothing is in Memory.')
+        else:
+            print(f'Saved value: {m_list[0]}')
+    else:
+        if not m_list:
+            print('Nothing in memory to delete.')
+        else:
+            m_list.clear()
+            print('Deletion completed!')
+
+
+def history_save(save_history, option, f_number, s_number, output):
+    save_history.append((f_number, option, s_number, output))
+
+
+def history_view(view_history):
+    if not view_history:
+        print('Oops! No records available.')
+    else:
+        for content in view_history:
+            first, symbol, second, result_number = content
+            print(f'{first} {symbol} {second} = {result_number}')
+
+
+def csvfile_save(f_number, symbol, s_number, output):
+    try:
+        with open('calculator_history.csv', 'a', newline='', encoding='utf-8') as file_object:
+            writer_object = csv.writer(file_object, delimiter=',')
+            writer_object.writerow([datetime.date.today(), f_number, symbol, s_number, output])
+    except OSError as error:
+        print(f'Calculation completed, but CSV saving failed: {error}')
+
+
+def csvfile_view():
+    count = 0
+    try:
+        with open('calculator_history.csv', 'r', newline='', encoding='utf-8') as fileview_object:
+            reader_object = csv.reader(fileview_object, delimiter=',')
+            print('----Date---|----Calculation----')
+            for row in reader_object:
+                record_date, f_number, oper, s_number, gives = row
+                print(f'{record_date}: {float(f_number):.2f} {oper} {float(s_number):.2f} = {float(gives):.2f}')
+                count += 1
+        print(f'Total records found: {count}')
+    except FileNotFoundError:
+        print('File is not found.')
+    except PermissionError:
+        print('Permission denied: cannot read the CSV file.')
+
+
+OPERATIONS = {
+    1: ('Addition', '+', operator.add),
+    2: ('Subtraction', '-', operator.sub),
+    3: ('Multiplication', '*', operator.mul),
+    4: ('Division', '/', operator.truediv),
+    5: ('Floor Division', '//', operator.floordiv),
+    6: ('Modulo', '%', operator.mod),
+}
+result = None
+print('________Menu Options_________')
+for number, (value, *_) in OPERATIONS.items():
+    print(number, value)
+OPERATION_LIST = ['Save Latest Calculation', 'View Latest Save', 'Delete Latest Save', 'View History', 'View Total History', 'Quit']
+for number, item in enumerate(OPERATION_LIST, 7):
+    print(number, item)
+
+memory = []
+history = []
+cont = ''
+while True:
+    try:
+        choice = int(input('Enter your choice:'))
+        if 0 < choice < 7:
+            _, symbols, function = OPERATIONS[choice]
+            if cont != 'c': first_number = int(input('Enter first number'))
+            second_number = int(input('Enter second number'))
+            result = function(first_number, second_number)
+            history_save(history, symbols, first_number, second_number, result)
+            csvfile_save(first_number, symbols, second_number, result)
+            print(f'{first_number} {symbols} {second_number} = {result}')
+            cont = input('C. Continue calculation wit answer').strip().lower()
+            if cont == 'c':
+                first_number = result
+        elif choice in (7, 8, 9):
+            memory_manage(result, memory, choice)
+        elif choice == 10:
+            history_view(history)
+        elif choice == 11:
+            csvfile_view()
+        elif choice == 12:
+            break
+        else:
+            raise ValueError
+    except ValueError:
+        print('Invalid Input')
+    except ZeroDivisionError:
+        print('Division and Modulo by 0 is not allowed.')
+    except KeyboardInterrupt:
+        print('\nProgram ends here, because of keyboard interrupt')
+        sys.exit()
+
+
+
