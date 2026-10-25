@@ -1,0 +1,190 @@
+#Main Program
+import operation as OP
+import calculator_class as CL
+from operation import OPERATIONS
+import memory as m
+import view_calculation_story as vs
+
+
+def option_accept(choice, obj_name):
+    if choice == 1:
+        return obj_name.addition()
+    elif choice == 2:
+        return obj_name.subtraction()
+    elif choice == 3:
+        return obj_name.multiplication()
+    elif choice == 4:
+        return obj_name.division()
+    elif choice == 5:
+        return obj_name.floor_division()
+    else:
+        return obj_name.modulo()
+
+
+class CalculatorCLI:
+    def __init__(self, phrase, memory, history):
+        self.phrase = phrase
+        self.memory = memory
+        self.history = history
+
+    def begin_calculator(self):
+        print(self.phrase)
+        result = None
+        cont = ''
+        while True:
+            try:
+                option = int(input("Enter your choice: "))
+                if option in [1, 2, 3, 4, 5, 6]:
+                    if cont != 'c':
+                        first_number = int(input('Enter first number: '))
+                    second_number = int(input('Enter second number: '))
+                    calc_obj = CL.Calculator(first_number, second_number)
+                    result = option_accept(option, calc_obj)
+                    print(f'{first_number} {OPERATIONS[option][1]} {second_number} = {result}')
+                    vs.history_save(self.history, OPERATIONS[option][1], first_number, second_number, result)
+                    vs.csvfile_save(first_number, OPERATIONS[option][1], second_number, result)
+                    cont = input("Enter c if you want to use Calculator chain: ").strip().lower()
+                    if cont == 'c':
+                        first_number = result
+                elif option in [7, 8, 9]:
+                    m.memory_manage(result, self.memory, option)
+                elif option == 10:
+                    vs.history_view(self.history)
+                elif option == 11:
+                    vs.csvfile_view()
+                elif option == 12:
+                    break
+                else:
+                    raise ValueError
+
+            except ValueError:
+                print("Invalid Input...")
+            except TypeError:
+                print("Values not available")
+            except ZeroDivisionError:
+                print("Division and Modulo by 0 is not allowed...")
+
+
+def main():
+    calc_memory = []
+    calc_history = []
+    OP.menu()
+    user = CalculatorCLI("A Calculator using OOPs...", calc_memory, calc_history)
+    user.begin_calculator()
+    print("Finished")
+
+
+if __name__ == '__main__':
+    main()
+
+#operation file
+OPERATIONS = {
+    1: ('Addition', '+'),
+    2: ('Subtraction', '-'),
+    3: ('Multiplication', '*'),
+    4: ('Division', '/'),
+    5: ('Floor Division', '//'),
+    6: ('Modulo', '%')
+}
+
+
+def menu():
+    print('________Menu Options_________')
+    for number, (value, *_) in OPERATIONS.items():
+        print(number, value)
+    OPERATION_LIST = ['Save Latest Calculation', 'View Latest Save', 'Delete Latest Save', 'View History', 'View Total History', 'Quit']
+    for number, item in enumerate(OPERATION_LIST, 7):
+        print(number, item)
+
+#calculator class file
+
+class Calculator:
+    def __init__(self, f_number, s_number):
+        self.f_number = f_number
+        self.s_number = s_number
+
+    def addition(self):
+        return self.f_number + self.s_number
+
+    def subtraction(self):
+        return self.f_number - self.s_number
+
+    def multiplication(self):
+        return self.f_number * self.s_number
+
+    def division(self):
+        return self.f_number / self.s_number
+
+    def floor_division(self):
+        return self.f_number // self.s_number
+
+    def modulo(self):
+        return self.f_number % self.s_number
+
+#memory file
+
+def memory_manage(output, m_list, option):
+    if option == 7:
+        if output is None:
+            print('No Value to Save')
+            return
+        m_list.clear()
+        m_list.append(output)
+        print('Memory Updated')
+    elif option == 8:
+        if not m_list:
+            print('Nothing is in Memory.')
+        else:
+            print(f'Saved value: {m_list[0]}')
+    elif option == 9:
+        if not m_list:
+            print('Nothing in memory to delete.')
+        else:
+            m_list.clear()
+            print('Deletion completed!')
+    else:
+        print("Invalid Input")
+
+#view calculator story file
+
+import csv
+import datetime
+
+
+def history_save(save_history, option, f_number, s_number, output):
+    save_history.append((f_number, option, s_number, output))
+
+
+def history_view(view_history):
+    if not view_history:
+        print('Oops! No records available.')
+    else:
+        for content in view_history:
+            first, symbol, second, result_number = content
+            print(f'{first} {symbol} {second} = {result_number}')
+
+
+def csvfile_save(f_number, symbol, s_number, output):
+    try:
+        with open('calculator_history_oops.csv', 'a', newline='', encoding='utf-8') as file_object:
+            writer_object = csv.writer(file_object, delimiter=',')
+            writer_object.writerow([datetime.date.today(), f_number, symbol, s_number, output])
+    except OSError as error:
+        print(f'Calculation completed, but CSV saving failed: {error}')
+
+
+def csvfile_view():
+    count = 0
+    try:
+        with open('calculator_history_oops.csv', 'r', newline='', encoding='utf-8') as fileview_object:
+            reader_object = csv.reader(fileview_object, delimiter=',')
+            print('----Date---|----Calculation----')
+            for row in reader_object:
+                record_date, f_number, oper, s_number, gives = row
+                print(f'{record_date}: {float(f_number):.2f} {oper} {float(s_number):.2f} = {float(gives):.2f}')
+                count += 1
+        print(f'Total records found: {count}')
+    except FileNotFoundError:
+        print('File is not found.')
+    except PermissionError:
+        print('Permission denied: cannot read the CSV file.')
